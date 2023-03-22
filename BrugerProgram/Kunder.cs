@@ -14,6 +14,7 @@ namespace BrugerProgram
     {
         public string? Name { get; set; }
         public string? Email { get; set; }
+        public int? PhoneNumber { get; set; }
         public string?  PostalCode { get; set; }
         public string? City { get; set; }
         public string? StreetName { get; set; }
@@ -21,10 +22,11 @@ namespace BrugerProgram
 
         public Kunde() { }
 
-        public Kunde(string name, string email, string postalCode, string city, string streetName)
+        public Kunde(string name, string email, int phoneNumber, string postalCode, string city, string streetName)
         {
             Name = name;   
             Email = email;
+            PhoneNumber = phoneNumber;
             PostalCode = postalCode;
             City = city;    
             StreetName = streetName;

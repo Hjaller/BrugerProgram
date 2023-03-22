@@ -65,7 +65,8 @@ namespace BrugerProgram
         {
             List <Kunde> kunder = GetCustomersFromJsonFile();
             string fullname, email, postalcode, city, streetName;
-            Console.Write("Oprettelse af kunde:");
+            int tlfnr;
+            Console.WriteLine("Oprettelse af kunde:");
             Console.Write("Indtast fulde navn: ");
             fullname = Console.ReadLine();
             do
@@ -73,6 +74,11 @@ namespace BrugerProgram
                 Console.Write("Indtast email: ");
                 email = Console.ReadLine();
             } while (CheckEmailExists(email));
+            do
+            {
+                Console.Write("Indtast tlf nr: ");
+                tlfnr = int.Parse(Console.ReadLine());
+            } while (CheckPhoneNumberExist(tlfnr));
             Console.Write("Indtast postnummer: ");
             postalcode = Console.ReadLine();
 
@@ -84,7 +90,7 @@ namespace BrugerProgram
 
 
 
-            kunder.Add(new Kunde(fullname, email, postalcode, city, streetName));
+            //kunder.Add(new Kunde(fullname, email, postalcode, city, streetName));
             var test = JsonConvert.SerializeObject(kunder, Formatting.Indented);
             File.WriteAllText(path + @"\kundedata.json", test);
             Console.WriteLine("Kunde oprettet! Tryk en tast for at komme tilbage!");
@@ -114,22 +120,29 @@ namespace BrugerProgram
             string[] vejnavne = File.ReadAllLines(path + @"\vejnavne.dat");
 
             string randomNavn, randomEfternavn, randomEmail, randomPostBy, randomVejnavn;
+            int randomTlfnr; 
             List<Kunde> list = GetCustomersFromJsonFile();
             for (int i = 0; i < amount; i++)
             {
                 randomNavn = fornavne[random.Next(0, fornavne.Length)];
                 randomEfternavn = efternavne[random.Next(0, efternavne.Length)];
+                randomPostBy = postby[random.Next(0, postby.Length)];
+                randomVejnavn = vejnavne[random.Next(0, vejnavne.Length)];
+                string[] cityAndPostalcode = randomPostBy.Split(";");
 
+                do
+                {
+                    randomTlfnr = random.Next(00000000, 99999999);
+                } while (CheckPhoneNumberExist(randomTlfnr));
 
                 do
                 {
                     randomEmail = randomNavn + "." + randomEfternavn + "@" + emails[random.Next(0, emails.Length)];
                 } while (CheckEmailExists(randomEmail));
-                randomPostBy = postby[random.Next(0, postby.Length)];
-                randomVejnavn = vejnavne[random.Next(0, vejnavne.Length)];
+
+
                 Console.WriteLine(randomNavn + " " + randomEfternavn + " " + randomEmail + "" + randomPostBy + " " + randomVejnavn);
-                string[] cityAndPostalcode = randomPostBy.Split(";");
-                list.Add(new Kunde(randomNavn + " "+ randomEfternavn, randomEmail, cityAndPostalcode[0], cityAndPostalcode[1], randomVejnavn));
+                list.Add(new Kunde(randomNavn + " "+ randomEfternavn, randomEmail, randomTlfnr, cityAndPostalcode[0], cityAndPostalcode[1], randomVejnavn));
                 var test = JsonConvert.SerializeObject(list, Formatting.Indented);
                 File.WriteAllText(path + @"\kundedata.json", test);
             }
@@ -169,6 +182,7 @@ namespace BrugerProgram
                         .Where(customer =>
                             customer.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
                             customer.Email.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                            customer.PhoneNumber.ToString().Contains(search, StringComparison.OrdinalIgnoreCase) ||
                             customer.City.Contains(search, StringComparison.OrdinalIgnoreCase) ||
                             customer.PostalCode.Contains(search, StringComparison.OrdinalIgnoreCase) ||
                             customer.StreetName.Contains(search, StringComparison.OrdinalIgnoreCase))
@@ -185,6 +199,7 @@ namespace BrugerProgram
                     Kunde customer = displayedCustomers.ElementAt(i);
                     Console.WriteLine($"Navn: {customer.Name}");
                     Console.WriteLine($"E-mail: {customer.Email}");
+                    Console.WriteLine($"Tlf. nr: {customer.PhoneNumber}");
                     Console.WriteLine($"Adresse: {customer.StreetName} {customer.City} {customer.PostalCode}");
                     Console.WriteLine(new string('-', 40));
                 }
@@ -232,14 +247,15 @@ namespace BrugerProgram
             return false;
         }
 
-        public bool CheckPhoneNumberExist(string email)
+        public static bool CheckPhoneNumberExist(int number)
         {
             string path = @"C:\kundedata\kundedata.json";
             List<Kunde> kunder = JsonConvert.DeserializeObject<List<Kunde>>(File.ReadAllText(path));
-
+            if (number.ToString().Substring(0, 1) == "0") return true;
+            if (number.ToString().Length != 8) return true;
             foreach (Kunde k in kunder)
             {
-                if (k.Email == email)
+                if (k.PhoneNumber == number)
                 {
                     return true;
                 }
